@@ -5,7 +5,7 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-ARTICLE_HEADER_RE = re.compile(r"^ARTICULO\s+(\d+[A-Z]?)\.\s*(.*)$", re.IGNORECASE)
+ARTICLE_HEADER_RE = re.compile(r"^ART[IÍ]CULO\s+(\d+[A-Z]?)\.\s*(.*)$", re.IGNORECASE)
 MODIFIED_BY_RE = re.compile(
     r"Modificado por (?:el|los)?\s*(?:Art\.|Art[íi]culos?)\s+"
     r"(?P<source_articles>[\d\wáéíóú° y,]+?)\s+"

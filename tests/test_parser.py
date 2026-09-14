@@ -60,3 +60,18 @@ def test_article_with_no_modifications_stays_vigente(articles):
 def test_snapshot_hash_is_recorded(articles):
     art = articles["179"]
     assert len(art.raw_snapshot_sha256) == 64
+
+
+def test_handles_articulo_header_with_accent(tmp_path):
+    html = (
+        "<p><strong>ARTICULO 500. UNO.</strong> Texto cero.</p>"
+        "<p><strong>ARTÍCULO 501. DOS.</strong> Texto uno.</p>"
+        "<p><strong>ARTICULO 502. TRES.</strong> Texto dos.</p>"
+    )
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("500", "502"))}
+
+    assert "501" in arts
+    assert arts["501"].title == "DOS"
