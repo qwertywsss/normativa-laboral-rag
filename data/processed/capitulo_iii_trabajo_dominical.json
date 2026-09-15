@@ -55,7 +55,7 @@
         "type": "ley",
         "number": "51",
         "year": 1983,
-        "source_articles": "1 y 2"
+        "source_articles": "ículos 1 y 2"
       }
     ],
     "constitutional_review": [],
@@ -212,8 +212,15 @@
     "code": "CST",
     "chapter": "Capítulo III - Trabajo Dominical y Festivo",
     "title": "LABORES AGROPECUARIAS",
-    "text": "Los trabajadores de empresas agrícolas, forestales y ganaderas que ejecuten actividades no susceptibles de interrupción, deben de trabajar los domingos y días de fiesta, remunerándose su trabajo en la forma prevista en el artículo 179 y con derecho al descanso compensatorio. (Adicionado por el Art. 28 de la Ley 50 de 1990)",
-    "modified_by": [],
+    "text": "Los trabajadores de empresas agrícolas, forestales y ganaderas que ejecuten actividades no susceptibles de interrupción, deben de trabajar los domingos y días de fiesta, remunerándose su trabajo en la forma prevista en el artículo 179 y con derecho al descanso compensatorio.",
+    "modified_by": [
+      {
+        "type": "ley",
+        "number": "50",
+        "year": 1990,
+        "source_articles": "28"
+      }
+    ],
     "constitutional_review": [],
     "status": "vigente",
     "source_url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=199983",

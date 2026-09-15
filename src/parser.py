@@ -7,10 +7,25 @@ from bs4 import BeautifulSoup
 
 ARTICLE_HEADER_RE = re.compile(r"^ART[IÍ]CULO\s+(\d+)\s*([A-Za-zº°]?)\.\s*(.*)$", re.IGNORECASE)
 ORDINAL_SUFFIXES = {"o", "º", "°"}
+# Nota de afectación que cita el artículo puntual de la norma que la origina, ej.:
+# "Modificado por el Art. 26 de la Ley 789 de 2002", "Mod Art 2 de la Ley 2466 de 2025",
+# "Derogado por el numeral 4 del Art. 3 de la Ley 48 de 1968".
 MODIFIED_BY_RE = re.compile(
-    r"Modificado por (?:el|los)?\s*(?:Art\.|Art[íi]culos?)\s+"
+    r"(?:Numeral\s+\d+\s*,?\s*)?"
+    r"\b(?P<verb>Modificad[oa]|Mod|Derogad[oa]|Subrogad[oa]|Adicionad[oa])\b\s*"
+    r"(?:por)?\s*(?:el|los|la)?\s*"
+    r"(?:numeral\s+\d+\s*,?\s*(?:del|de)?\s*)?"
+    r"(?:Art\.?|Art[íi]culos?\.?)\s*"
     r"(?P<source_articles>[\d\wáéíóú° y,]+?)\s+"
-    r"(?:del|de la|de el|de)\s+(?P<type>Decreto|Ley)\s+(?P<number>\d+)\s+de\s+(?P<year>\d{4})",
+    r"(?:del|de la|de el|de)\s+(?P<type>Decreto\s+Ley|Decreto|Ley)\s+(?P<number>\d+)\s+de\s+(?P<year>\d{4})",
+    re.IGNORECASE,
+)
+
+# Afectación directa por una norma completa, sin citar un artículo puntual, ej.:
+# "Derogado la Ley 100 de 1993", "Subrogado por La ley 100 de 1993".
+DIRECT_NORM_RE = re.compile(
+    r"\b(?P<verb>Derogad[oa]|Subrogad[oa])\b\s*(?:por)?\s*(?:el|los|la)?\s*"
+    r"(?P<type>Decreto\s+Ley|Decreto|Ley)\s+(?P<number>\d+)\s+de\s+(?P<year>\d{4})",
     re.IGNORECASE,
 )
 CONSTITUTIONAL_REVIEW_RE = re.compile(
@@ -26,7 +41,7 @@ class ModifiedBy:
     type: str
     number: str
     year: int
-    source_articles: str
+    source_articles: str = ""
 
 
 @dataclass
@@ -66,17 +81,41 @@ def _normalize_article_id(digits: str, suffix: str) -> str:
     return f"{digits}{suffix.upper()}"
 
 
+def _register_affectation(article: Article, verb: str, type_: str, number: str, year: str, source_articles: str = "") -> None:
+    article.modified_by.append(
+        ModifiedBy(
+            type=type_.lower().replace(" ", "_"),
+            number=number,
+            year=int(year),
+            source_articles=source_articles,
+        )
+    )
+    if verb.lower().startswith("derog"):
+        article.status = "derogado"
+
+
 def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
     """Returns True if the paragraph was a metadata note (not article body)."""
     mod_match = MODIFIED_BY_RE.search(paragraph_text)
     if mod_match:
-        article.modified_by.append(
-            ModifiedBy(
-                type=mod_match.group("type").lower(),
-                number=mod_match.group("number"),
-                year=int(mod_match.group("year")),
-                source_articles=_clean(mod_match.group("source_articles")),
-            )
+        _register_affectation(
+            article,
+            verb=mod_match.group("verb"),
+            type_=mod_match.group("type"),
+            number=mod_match.group("number"),
+            year=mod_match.group("year"),
+            source_articles=_clean(mod_match.group("source_articles")),
+        )
+        return True
+
+    direct_match = DIRECT_NORM_RE.search(paragraph_text)
+    if direct_match:
+        _register_affectation(
+            article,
+            verb=direct_match.group("verb"),
+            type_=direct_match.group("type"),
+            number=direct_match.group("number"),
+            year=direct_match.group("year"),
         )
         return True
 

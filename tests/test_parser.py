@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from src.parser import parse_chapter
+from src.parser import ModifiedBy, parse_chapter
 
 HTML_PATH = Path(__file__).resolve().parent.parent / "data" / "raw" / "decreto_2663_1950.html"
 
@@ -60,6 +60,49 @@ def test_article_with_no_modifications_stays_vigente(articles):
 def test_snapshot_hash_is_recorded(articles):
     art = articles["179"]
     assert len(art.raw_snapshot_sha256) == 64
+
+
+def test_article_185a_captures_adicionado_por(articles):
+    art = articles["185A"]
+    assert len(art.modified_by) == 1
+    assert art.modified_by[0].type == "ley"
+    assert art.modified_by[0].number == "50"
+    assert art.modified_by[0].year == 1990
+
+
+def test_recognizes_abbreviated_mod_form(tmp_path):
+    html = "<p><strong>ARTICULO 500. UNO.</strong> Texto.</p><p>(Mod Art 2 de la Ley 2466 de 2025)</p>"
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("500", "500"))}
+
+    mods = arts["500"].modified_by
+    assert len(mods) == 1
+    assert mods[0] == ModifiedBy(type="ley", number="2466", year=2025, source_articles="2")
+
+
+def test_derogado_por_articulo_marks_status(tmp_path):
+    html = "<p><strong>ARTICULO 501. UNO.</strong> Texto.</p><p>(Derogado por el Art. 9 de la Ley 11 de 1984)</p>"
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("501", "501"))}
+
+    assert arts["501"].status == "derogado"
+    assert arts["501"].modified_by[0].number == "11"
+
+
+def test_derogado_por_norma_completa_sin_articulo(tmp_path):
+    html = "<p><strong>ARTICULO 502. UNO.</strong> Texto.</p><p>(Derogado la Ley 100 de 1993)</p>"
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("502", "502"))}
+
+    art = arts["502"]
+    assert art.status == "derogado"
+    assert art.modified_by == [ModifiedBy(type="ley", number="100", year=1993)]
 
 
 def test_normalizes_ordinal_suffix_and_uppercases_real_letter(tmp_path):
