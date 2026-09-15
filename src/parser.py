@@ -5,7 +5,8 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-ARTICLE_HEADER_RE = re.compile(r"^ART[IÍ]CULO\s+(\d+[A-Z]?)\.\s*(.*)$", re.IGNORECASE)
+ARTICLE_HEADER_RE = re.compile(r"^ART[IÍ]CULO\s+(\d+)\s*([A-Za-zº°]?)\.\s*(.*)$", re.IGNORECASE)
+ORDINAL_SUFFIXES = {"o", "º", "°"}
 MODIFIED_BY_RE = re.compile(
     r"Modificado por (?:el|los)?\s*(?:Art\.|Art[íi]culos?)\s+"
     r"(?P<source_articles>[\d\wáéíóú° y,]+?)\s+"
@@ -55,6 +56,14 @@ class Article:
 
 def _clean(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
+
+
+def _normalize_article_id(digits: str, suffix: str) -> str:
+    # "5o.", "5º." son formas antiguas de escribir el ordinal "5.", no una letra
+    # que distinga un artículo distinto (a diferencia de "185A", sí real).
+    if not suffix or suffix.lower() in ORDINAL_SUFFIXES:
+        return digits
+    return f"{digits}{suffix.upper()}"
 
 
 def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
@@ -110,7 +119,7 @@ def parse_chapter(html_path: Path, chapter: str, article_range: tuple[str, str])
         header_match = ARTICLE_HEADER_RE.match(_clean(strong.get_text())) if strong else None
 
         if header_match:
-            article_id = header_match.group(1)
+            article_id = _normalize_article_id(header_match.group(1), header_match.group(2))
             if past_end:
                 break
             if article_id == start_id:
@@ -122,7 +131,7 @@ def parse_chapter(html_path: Path, chapter: str, article_range: tuple[str, str])
                     article_id=article_id,
                     code="CST",
                     chapter=chapter,
-                    title=_clean(header_match.group(2)).rstrip("."),
+                    title=_clean(header_match.group(3)).rstrip("."),
                     text="",
                     raw_snapshot_sha256=snapshot_hash,
                 )

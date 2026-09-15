@@ -62,6 +62,24 @@ def test_snapshot_hash_is_recorded(articles):
     assert len(art.raw_snapshot_sha256) == 64
 
 
+def test_normalizes_ordinal_suffix_and_uppercases_real_letter(tmp_path):
+    html = (
+        "<p><strong>ARTICULO 5o. DEFINICION.</strong> Texto cinco.</p>"
+        "<p><strong>ARTICULO 6º. OTRO.</strong> Texto seis.</p>"
+        "<p><strong>ARTICULO 241a. CON LETRA REAL.</strong> Texto con letra.</p>"
+    )
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("5", "241A"))}
+
+    assert "5" in arts
+    assert "6" in arts
+    assert "241A" in arts
+    assert "5o" not in arts
+    assert "241a" not in arts
+
+
 def test_handles_articulo_header_with_accent(tmp_path):
     html = (
         "<p><strong>ARTICULO 500. UNO.</strong> Texto cero.</p>"
