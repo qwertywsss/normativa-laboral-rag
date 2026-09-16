@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from src.parser import ModifiedBy, parse_chapter
+from src.parser import ModifiedBy, filter_range, parse_all_articles, parse_chapter
 
 HTML_PATH = Path(__file__).resolve().parent / "fixtures" / "capitulo_iii_trabajo_dominical.html"
 
@@ -122,6 +122,35 @@ def test_derogado_por_norma_completa_sin_articulo(tmp_path):
     art = arts["502"]
     assert art.status == "derogado"
     assert art.modified_by == [ModifiedBy(type="ley", number="100", year=1993)]
+
+
+def test_range_stops_when_last_article_has_no_body_paragraphs(tmp_path):
+    # Bug real: si el filtrado se hacía en el mismo recorrido que el parseo, el
+    # corte de rango dependía de procesar un párrafo de CUERPO del último
+    # artículo. Un artículo final sin cuerpo propio (título en el mismo <p> que
+    # el encabezado, sin párrafos después) nunca disparaba el corte y el
+    # parseo seguía de largo hasta el final del documento.
+    html = (
+        "<p><strong>ARTICULO 600. UNO.</strong> Texto seiscientos.</p>"
+        "<p><strong>ARTICULO 601. DOS.</strong></p>"
+        "<p><strong>ARTICULO 602. TRES.</strong> No debería aparecer.</p>"
+    )
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = parse_chapter(path, "Test", ("600", "601"))
+
+    assert [a.article_id for a in arts] == ["600", "601"]
+
+
+def test_filter_range_raises_when_start_id_missing(tmp_path):
+    html = "<p><strong>ARTICULO 1. UNO.</strong> Texto.</p>"
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    all_articles = parse_all_articles(path, "Test")
+    with pytest.raises(ValueError):
+        filter_range(all_articles, "999", "999")
 
 
 def test_normalizes_ordinal_suffix_and_uppercases_real_letter(tmp_path):

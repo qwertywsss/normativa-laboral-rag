@@ -137,13 +137,10 @@ def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
     return False
 
 
-def parse_chapter(html_path: Path, chapter: str, article_range: tuple[str, str]) -> list[Article]:
+def parse_all_articles(html_path: Path, chapter: str) -> list[Article]:
     soup = BeautifulSoup(html_path.read_text(encoding="utf-8", errors="ignore"), "html.parser")
     snapshot_hash = hashlib.sha256(html_path.read_bytes()).hexdigest()
 
-    start_id, end_id = article_range
-    in_range = False
-    past_end = False
     articles: list[Article] = []
     current: Article | None = None
 
@@ -158,27 +155,21 @@ def parse_chapter(html_path: Path, chapter: str, article_range: tuple[str, str])
         header_match = ARTICLE_HEADER_RE.match(_clean(strong.get_text())) if strong else None
 
         if header_match:
-            article_id = _normalize_article_id(header_match.group(1), header_match.group(2))
-            if past_end:
-                break
-            if article_id == start_id:
-                in_range = True
-            if in_range:
-                if current:
-                    articles.append(current)
-                current = Article(
-                    article_id=article_id,
-                    code="CST",
-                    chapter=chapter,
-                    title=_clean(header_match.group(3)).rstrip("."),
-                    text="",
-                    raw_snapshot_sha256=snapshot_hash,
-                )
-                full_text = _clean(p.get_text())
-                title_text = _clean(strong.get_text())
-                inline_body = full_text[len(title_text):].strip() if full_text.startswith(title_text) else ""
-                if inline_body and not _classify_paragraph(inline_body, current):
-                    current.text = inline_body
+            if current:
+                articles.append(current)
+            current = Article(
+                article_id=_normalize_article_id(header_match.group(1), header_match.group(2)),
+                code="CST",
+                chapter=chapter,
+                title=_clean(header_match.group(3)).rstrip("."),
+                text="",
+                raw_snapshot_sha256=snapshot_hash,
+            )
+            full_text = _clean(p.get_text())
+            title_text = _clean(strong.get_text())
+            inline_body = full_text[len(title_text):].strip() if full_text.startswith(title_text) else ""
+            if inline_body and not _classify_paragraph(inline_body, current):
+                current.text = inline_body
             continue
 
         if current is None:
@@ -191,13 +182,28 @@ def parse_chapter(html_path: Path, chapter: str, article_range: tuple[str, str])
         if not _classify_paragraph(text, current):
             current.text = f"{current.text} {text}".strip() if current.text else text
 
-        if current.article_id == end_id:
-            past_end = True
-
-    if current and current not in articles:
+    if current:
         articles.append(current)
 
     return articles
+
+
+def filter_range(articles: list[Article], start_id: str, end_id: str) -> list[Article]:
+    ids = [a.article_id for a in articles]
+    try:
+        start_idx = ids.index(start_id)
+    except ValueError:
+        raise ValueError(f"No se encontró el artículo de inicio '{start_id}'") from None
+    try:
+        end_idx = ids.index(end_id, start_idx)
+    except ValueError:
+        raise ValueError(f"No se encontró el artículo de fin '{end_id}' después de '{start_id}'") from None
+    return articles[start_idx : end_idx + 1]
+
+
+def parse_chapter(html_path: Path, chapter: str, article_range: tuple[str, str]) -> list[Article]:
+    start_id, end_id = article_range
+    return filter_range(parse_all_articles(html_path, chapter), start_id, end_id)
 
 
 if __name__ == "__main__":
