@@ -33,6 +33,21 @@ def test_article_179_has_title_and_body(articles):
     assert "PARÁGRAFO" not in art.text[:50]
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "Fuente desactualizada (ver docs/experiments/002-fuente-desactualizada.md): "
+        "Función Pública aún no marca la reforma de la Ley 2466 de 2025 en el art. 179. "
+        "Si esto empieza a pasar, la fuente ya se actualizó (o cruzamos una segunda "
+        "fuente) y hay que quitar este xfail."
+    ),
+)
+def test_article_179_freshness_reflects_ley_2466_de_2025(articles):
+    art = articles["179"]
+    laws = {(m.type, m.number, m.year) for m in art.modified_by}
+    assert ("ley", "2466", 2025) in laws
+
+
 def test_article_179_captures_all_historical_modifications(articles):
     art = articles["179"]
     laws = {(m.type, m.number, m.year) for m in art.modified_by}
