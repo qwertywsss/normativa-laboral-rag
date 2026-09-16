@@ -89,6 +89,26 @@ def test_article_185a_captures_adicionado_por(articles):
     assert art.modified_by[0].year == 1990
 
 
+def test_handles_condicionalmente_exequible(tmp_path):
+    # "declarado CONDICIONALMENTE EXEQUIBLE" mete una palabra entre el verbo y
+    # el resultado; sin el calificador opcional en el regex, la nota completa
+    # no matcheaba y se colaba como texto de cuerpo del artículo.
+    html = (
+        "<p><strong>ARTICULO 700. UNO.</strong> Texto.</p>"
+        "<p>(Declarado CONDICIONALMENTE EXEQUIBLE por la Corte Constitucional "
+        "mediante Sentencia C-372-98)</p>"
+    )
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("700", "700"))}
+    art = arts["700"]
+
+    assert len(art.constitutional_review) == 1
+    assert art.constitutional_review[0].result == "exequible_condicionado"
+    assert "CONDICIONALMENTE" not in art.text
+
+
 def test_handles_hyphenated_article_id(tmp_path):
     # ARTICULO 391-1 (adicionado con guion, no con letra como 185A) se perdía
     # por completo: el regex no matcheaba en absoluto y el artículo desaparecía

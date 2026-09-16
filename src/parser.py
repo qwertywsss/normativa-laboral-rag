@@ -29,7 +29,10 @@ DIRECT_NORM_RE = re.compile(
     re.IGNORECASE,
 )
 CONSTITUTIONAL_REVIEW_RE = re.compile(
-    r"Declarad[oa]s?\s+(?P<result>EXEQUIBLE|INEXEQUIBLE)[^)]*Sentencia\s*(?P<sentencia>[A-Z]-\d+-\d+)",
+    # "declarado CONDICIONALMENTE EXEQUIBLE..." mete una palabra entre el verbo
+    # y el resultado; sin el calificador opcional, la nota completa se pierde
+    # (no matchea nada) y se cuela como texto de cuerpo del artículo.
+    r"Declarad[oa]s?\s+(?:\w+\s+){0,2}(?P<result>EXEQUIBLE|INEXEQUIBLE)[^)]*Sentencia\s*(?P<sentencia>[A-Z]-\d+-\d+)",
     re.IGNORECASE,
 )
 
@@ -123,10 +126,16 @@ def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
     if review_match:
         upper_text = paragraph_text.upper()
         is_inexequible = "INEXEQUIBLE" in upper_text
+        if is_inexequible and "EXEQUIBLE" in upper_text:
+            result = "exequible_parcial"
+        elif "CONDICIONAL" in upper_text:
+            result = "exequible_condicionado"
+        else:
+            result = review_match.group("result").lower()
         article.constitutional_review.append(
             ConstitutionalReview(
                 sentencia=review_match.group("sentencia").upper(),
-                result="exequible_parcial" if (is_inexequible and "EXEQUIBLE" in upper_text) else review_match.group("result").lower(),
+                result=result,
                 raw_note=_clean(paragraph_text),
             )
         )
