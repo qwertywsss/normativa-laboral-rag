@@ -15,7 +15,10 @@ MODIFIED_BY_RE = re.compile(
     r"\b(?P<verb>Modificad[oa]|Mod|Derogad[oa]|Subrogad[oa]|Adicionad[oa])\b\s*"
     r"(?:por)?\s*(?:el|los|la)?\s*"
     r"(?:numeral\s+\d+\s*,?\s*(?:del|de)?\s*)?"
-    r"(?:Art\.?|Art[íi]culos?\.?)\s*"
+    # El orden importa: "Art\.?" es un prefijo válido de "Art[íi]culos?", así que
+    # si va primero en la alternancia consume solo "Art" y trunca la captura de
+    # source_articles (ej. "artículo 7" quedaba capturado como "ículo 7").
+    r"(?:Art[íi]culos?\.?|Art\.?)\s*"
     r"(?P<source_articles>[\d\wáéíóú° y,]+?)\s+"
     r"(?:del|de la|de el|de)\s+(?P<type>Decreto\s+Ley|Decreto|Ley)\s+(?P<number>\d+)\s+de\s+(?P<year>\d{4})",
     re.IGNORECASE,

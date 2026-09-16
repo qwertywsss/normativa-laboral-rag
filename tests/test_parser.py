@@ -176,6 +176,20 @@ def test_handles_hyphenated_article_id(tmp_path):
     assert arts["391-1"].title == "DIRECTIVAS SECCIONALES"
 
 
+def test_full_word_articulo_does_not_truncate_source_articles(tmp_path):
+    # Bug real (arts. 177, 379, 380 del CST): la alternancia probaba "Art\.?"
+    # antes que "Art[íi]culos?", y como "Art" es un prefijo válido de
+    # "artículo", la captura de source_articles quedaba truncada
+    # ("ículo 7" en vez de "7").
+    html = "<p><strong>ARTICULO 803. UNO.</strong> Texto.</p><p>(Modificado por el artículo 7 de la Ley 584 de 2000)</p>"
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("803", "803"))}
+
+    assert arts["803"].modified_by[0].source_articles == "7"
+
+
 def test_recognizes_abbreviated_mod_form(tmp_path):
     html = "<p><strong>ARTICULO 500. UNO.</strong> Texto.</p><p>(Mod Art 2 de la Ley 2466 de 2025)</p>"
     path = tmp_path / "mini.html"
