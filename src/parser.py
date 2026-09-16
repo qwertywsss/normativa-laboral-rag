@@ -5,7 +5,7 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-ARTICLE_HEADER_RE = re.compile(r"^ART[IÍ]CULO\s+(\d+)\s*([A-Za-zº°]?)\.\s*(.*)$", re.IGNORECASE)
+ARTICLE_HEADER_RE = re.compile(r"^ART[IÍ]CULO\s+(\d+(?:-\d+)?)\s*([A-Za-zº°]?)\.\s*(.*)$", re.IGNORECASE)
 ORDINAL_SUFFIXES = {"o", "º", "°"}
 # Nota de afectación que cita el artículo puntual de la norma que la origina, ej.:
 # "Modificado por el Art. 26 de la Ley 789 de 2002", "Mod Art 2 de la Ley 2466 de 2025",

@@ -89,6 +89,24 @@ def test_article_185a_captures_adicionado_por(articles):
     assert art.modified_by[0].year == 1990
 
 
+def test_handles_hyphenated_article_id(tmp_path):
+    # ARTICULO 391-1 (adicionado con guion, no con letra como 185A) se perdía
+    # por completo: el regex no matcheaba en absoluto y el artículo desaparecía
+    # sin ningún aviso.
+    html = (
+        "<p><strong>ARTICULO 391. UNO.</strong> Texto original.</p>"
+        "<p><strong>ARTICULO 391-1. DIRECTIVAS SECCIONALES.</strong> Texto nuevo.</p>"
+        "<p><strong>ARTICULO 392. TRES.</strong> Otro texto.</p>"
+    )
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("391", "392"))}
+
+    assert "391-1" in arts
+    assert arts["391-1"].title == "DIRECTIVAS SECCIONALES"
+
+
 def test_recognizes_abbreviated_mod_form(tmp_path):
     html = "<p><strong>ARTICULO 500. UNO.</strong> Texto.</p><p>(Mod Art 2 de la Ley 2466 de 2025)</p>"
     path = tmp_path / "mini.html"
