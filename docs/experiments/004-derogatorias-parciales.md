@@ -1,0 +1,9 @@
+# 004 — Las derogatorias parciales no derogan el artículo completo
+
+**Hallazgo:** al correr el parser sobre el CST completo (no solo el piloto), los artículos 162, 189, 379 y 380 quedaban marcados `status: "derogado"` mientras conservaban entre 548 y 3.164 caracteres de cuerpo — mucho más de lo que tendría un artículo realmente vacío por derogación total.
+
+**La causa:** el HTML fuente distingue explícitamente cuándo una derogación afecta a todo el artículo ("Derogado por el Art. 9 de la Ley 11 de 1984") frente a cuándo afecta solo una parte ("**Literal d)** derogado por el Art. 56 del Decreto 1393 de 1970", "**Numeral 2** derogado por el Art. 2 de la Ley 995 de 2005"). El parser capturaba ambas formas con la misma regex de afectación, pero aplicaba `status = "derogado"` al artículo completo sin distinguir el calificador de alcance ("Literal X)" / "Numeral N").
+
+**El fix:** se agregó `SCOPE_QUALIFIER_RE` para detectar ese calificador en la nota, y un campo nuevo `ModifiedBy.scope` que lo registra. `status` solo pasa a `"derogado"` cuando la nota **no** tiene calificador de alcance (es decir, cuando la derogación aplica al artículo entero). Una derogatoria de literal o numeral queda registrada en `modified_by` con su `scope`, pero el artículo sigue `"vigente"`.
+
+**Limitación conocida:** el calificador se busca en todo el párrafo de la nota, no solo inmediatamente antes del verbo. Si algún día aparece una nota que combine texto sustantivo y una afectación en el mismo párrafo (mencionando "literal c)" de pasada y una derogación real en la misma frase), podría marcarse como parcial por error. No se ha visto ese caso en la fuente actual — las notas de afectación siempre vienen en su propio `<p>`, separadas del cuerpo — pero vale la pena revisar si al escalar al CST completo aparece un contraejemplo.

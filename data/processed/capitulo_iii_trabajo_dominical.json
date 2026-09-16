@@ -10,7 +10,8 @@
         "type": "ley",
         "number": "50",
         "year": 1990,
-        "source_articles": "27"
+        "source_articles": "27",
+        "scope": ""
       }
     ],
     "constitutional_review": [
@@ -55,7 +56,8 @@
         "type": "ley",
         "number": "51",
         "year": 1983,
-        "source_articles": "ículos 1 y 2"
+        "source_articles": "ículos 1 y 2",
+        "scope": ""
       }
     ],
     "constitutional_review": [],
@@ -88,19 +90,22 @@
         "type": "ley",
         "number": "789",
         "year": 2002,
-        "source_articles": "26"
+        "source_articles": "26",
+        "scope": ""
       },
       {
         "type": "ley",
         "number": "50",
         "year": 1990,
-        "source_articles": "29"
+        "source_articles": "29",
+        "scope": ""
       },
       {
         "type": "decreto",
         "number": "2351",
         "year": 1965,
-        "source_articles": "12"
+        "source_articles": "12",
+        "scope": ""
       }
     ],
     "constitutional_review": [],
@@ -120,7 +125,8 @@
         "type": "ley",
         "number": "50",
         "year": 1990,
-        "source_articles": "30"
+        "source_articles": "30",
+        "scope": ""
       }
     ],
     "constitutional_review": [],
@@ -140,7 +146,8 @@
         "type": "ley",
         "number": "50",
         "year": 1990,
-        "source_articles": "31"
+        "source_articles": "31",
+        "scope": ""
       }
     ],
     "constitutional_review": [],
@@ -218,7 +225,8 @@
         "type": "ley",
         "number": "50",
         "year": 1990,
-        "source_articles": "28"
+        "source_articles": "28",
+        "scope": ""
       }
     ],
     "constitutional_review": [],

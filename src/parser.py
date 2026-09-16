@@ -28,6 +28,10 @@ DIRECT_NORM_RE = re.compile(
     r"(?P<type>Decreto\s+Ley|Decreto|Ley)\s+(?P<number>\d+)\s+de\s+(?P<year>\d{4})",
     re.IGNORECASE,
 )
+# Calificador que acota una afectación a una parte del artículo ("Literal d)
+# derogado por...", "Numeral 2 derogado por..."), en vez de al artículo entero.
+SCOPE_QUALIFIER_RE = re.compile(r"\b(?:Numeral\s+\d+|Literal\s+[a-záéíóú])\)?", re.IGNORECASE)
+
 CONSTITUTIONAL_REVIEW_RE = re.compile(
     # "declarado CONDICIONALMENTE EXEQUIBLE..." mete una palabra entre el verbo
     # y el resultado; sin el calificador opcional, la nota completa se pierde
@@ -45,6 +49,7 @@ class ModifiedBy:
     number: str
     year: int
     source_articles: str = ""
+    scope: str = ""
 
 
 @dataclass
@@ -84,21 +89,29 @@ def _normalize_article_id(digits: str, suffix: str) -> str:
     return f"{digits}{suffix.upper()}"
 
 
-def _register_affectation(article: Article, verb: str, type_: str, number: str, year: str, source_articles: str = "") -> None:
+def _register_affectation(
+    article: Article, verb: str, type_: str, number: str, year: str, source_articles: str = "", scope: str = ""
+) -> None:
     article.modified_by.append(
         ModifiedBy(
             type=type_.lower().replace(" ", "_"),
             number=number,
             year=int(year),
             source_articles=source_articles,
+            scope=scope,
         )
     )
-    if verb.lower().startswith("derog"):
+    # Una derogatoria acotada a un literal o numeral no deroga el artículo
+    # completo: el resto del texto sigue vigente (ver docs/experiments/004).
+    if verb.lower().startswith("derog") and not scope:
         article.status = "derogado"
 
 
 def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
     """Returns True if the paragraph was a metadata note (not article body)."""
+    scope_match = SCOPE_QUALIFIER_RE.search(paragraph_text)
+    scope = _clean(scope_match.group(0)) if scope_match else ""
+
     mod_match = MODIFIED_BY_RE.search(paragraph_text)
     if mod_match:
         _register_affectation(
@@ -108,6 +121,7 @@ def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
             number=mod_match.group("number"),
             year=mod_match.group("year"),
             source_articles=_clean(mod_match.group("source_articles")),
+            scope=scope,
         )
         return True
 
@@ -119,6 +133,7 @@ def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
             type_=direct_match.group("type"),
             number=direct_match.group("number"),
             year=direct_match.group("year"),
+            scope=scope,
         )
         return True
 

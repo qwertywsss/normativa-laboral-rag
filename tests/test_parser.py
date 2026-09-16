@@ -89,6 +89,55 @@ def test_article_185a_captures_adicionado_por(articles):
     assert art.modified_by[0].year == 1990
 
 
+def test_literal_derogado_does_not_derogate_whole_article(tmp_path):
+    # Bug real (arts. 162, 379, 380 del CST): "Literal d) derogado por..."
+    # deroga solo ese literal, no el artículo completo. El resto del artículo
+    # sigue teniendo contenido sustancial y debe seguir "vigente".
+    html = (
+        "<p><strong>ARTICULO 800. PROHIBICIONES.</strong> Es prohibido:</p>"
+        "<p>a) Primera prohibición, sigue vigente.</p>"
+        "<p>d) Cuarta prohibición, esta sí se derogó.</p>"
+        "<p>(Literal d) derogado por el Art. 56 del Decreto 1393 de 1970)</p>"
+    )
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("800", "800"))}
+    art = arts["800"]
+
+    assert art.status == "vigente"
+    assert art.modified_by[0].scope == "Literal d)"
+
+
+def test_numeral_derogado_does_not_derogate_whole_article(tmp_path):
+    # Bug real (art. 189 del CST): "Numeral 2 derogado por..." deroga solo ese
+    # numeral, no el artículo completo.
+    html = (
+        "<p><strong>ARTICULO 801. UNO.</strong> Texto.</p>"
+        "<p>(Numeral 2 derogado por el Art. 2 de la Ley 995 de 2005)</p>"
+    )
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("801", "801"))}
+    art = arts["801"]
+
+    assert art.status == "vigente"
+    assert art.modified_by[0].scope == "Numeral 2"
+
+
+def test_unscoped_derogado_still_derogates_whole_article(tmp_path):
+    html = "<p><strong>ARTICULO 802. UNO.</strong> Texto.</p><p>(Derogado por el Art. 9 de la Ley 11 de 1984)</p>"
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("802", "802"))}
+    art = arts["802"]
+
+    assert art.status == "derogado"
+    assert art.modified_by[0].scope == ""
+
+
 def test_handles_condicionalmente_exequible(tmp_path):
     # "declarado CONDICIONALMENTE EXEQUIBLE" mete una palabra entre el verbo y
     # el resultado; sin el calificador opcional en el regex, la nota completa
