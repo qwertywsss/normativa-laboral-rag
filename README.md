@@ -2,6 +2,8 @@
 
 Sistema de preguntas y respuestas sobre el Código Sustantivo del Trabajo (CST) de Colombia, con énfasis en la evaluación del pipeline (no solo en construirlo).
 
+> **Aviso:** este proyecto entrega información normativa con su cita (artículo, ley/decreto que lo modificó, jurisprudencia relevante). No es asesoría legal ni reemplaza la consulta con un abogado. Es un proyecto educativo de ingeniería, no un producto legal.
+
 ## Por qué este dominio
 
 El CST lleva 75 años modificándose por capas (Decreto 2351/1965, Ley 50/1990, Ley 789/2002, Ley 2466/2025, entre otras). Un mismo artículo puede tener varias redacciones vigentes en distintas fechas, y el conocimiento paramétrico de un LLM suele estar desactualizado frente a la última reforma. Esto convierte la vigencia temporal en un problema de ingeniería real, no solo de recuperación de texto.
