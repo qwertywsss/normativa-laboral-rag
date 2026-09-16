@@ -5,7 +5,7 @@ import pytest
 
 from src.parser import ModifiedBy, parse_chapter
 
-HTML_PATH = Path(__file__).resolve().parent.parent / "data" / "raw" / "decreto_2663_1950.html"
+HTML_PATH = Path(__file__).resolve().parent / "fixtures" / "capitulo_iii_trabajo_dominical.html"
 
 
 @pytest.fixture(scope="module")
