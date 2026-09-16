@@ -19,6 +19,10 @@ Piloto sobre el **Capítulo III — Trabajo Dominical y Festivo** (arts. 175-186
 
 El HTML crudo de cada fuente se guarda en `data/raw/` (con su hash) para que los resultados sean reproducibles aunque la fuente cambie.
 
+### Nota sobre TLS
+
+`funcionpublica.gov.co` sirve un certificado intermedio equivocado (el de "Domain Validation" en vez del de "Organization Validation" que realmente firmó su certificado), por lo que la cadena TLS nunca cierra con los certificados raíz estándar. El scraper no desactiva la verificación TLS (`verify=False` sería la salida fácil pero insegura); en su lugar arma un bundle combinando el certificado raíz de `certifi` con el intermedio correcto, guardado en `certs/sectigo_rsa_ov_intermediate.pem`.
+
 ## Estructura
 
 ```
