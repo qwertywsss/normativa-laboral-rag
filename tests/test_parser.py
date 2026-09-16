@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pytest
@@ -25,7 +26,10 @@ def test_extracts_all_articles_in_range(articles):
 def test_article_179_has_title_and_body(articles):
     art = articles["179"]
     assert art.title == "TRABAJO DOMINICAL Y FESTIVO"
-    assert "setenta y cinco por ciento" in art.text
+    # No se fija la cifra del recargo (75% en el snapshot actual): ya sabemos
+    # que está desactualizada (ver docs/experiments/002-fuente-desactualizada.md)
+    # y cambiará con cada reforma. Se verifica la estructura, no el valor.
+    assert re.search(r"recargo del \w[\w\s]* por ciento", art.text)
     assert "PARÁGRAFO" not in art.text[:50]
 
 
