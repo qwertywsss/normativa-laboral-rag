@@ -39,9 +39,26 @@ tests/          tests del parser
 
 ## Roadmap
 
+### Fase 0 — Ingesta y modelado de datos
 - [x] Scraper + parser del piloto (Cap. III) a JSON por artículo
-- [ ] Extender parser al CST completo (~500 artículos)
+- [x] Parser sobre el CST completo: 485 artículos, afectaciones con alcance
+      (total/parcial) y revisión constitucional
+- [ ] Modelo de versiones con vigencia: `versions[]` + `get_article(id, as_of)`
+
+### Fase 1 — Primer LLM y evaluación
+- [ ] Generador mínimo: corpus del piloto en contexto, respuesta con cita
+      y fecha de corte (sin recuperación todavía)
 - [ ] Dataset de evaluación (factual directa, aplicación, vigencia, fuera de alcance)
-- [ ] Baseline de recuperación (BM25 → embeddings → híbrido + reranking)
-- [ ] Guardrails (filtros de entrada/salida, detección de fuera de alcance)
-- [ ] Router por costo/dificultad y caché
+- [ ] Métricas: precisión de citación, exactitud del valor, tasa de abstención
+- [ ] `make eval` con tabla de resultados, costo por consulta y latencia
+
+### Fase 2 — Recuperación
+- [ ] Ampliar el corpus del sistema al CST completo
+- [ ] BM25 → embeddings → híbrido + reranking, medido contra el baseline de Fase 1
+
+### Fase 3 — Guardrails
+- [ ] Filtros de entrada/salida, abstención sin evidencia, pruebas de prompt injection
+
+### Fase 4 — Router por costo/dificultad
+### Fase 5 — Caché exacto y semántico
+### Fase 6 — Patrones de agente
