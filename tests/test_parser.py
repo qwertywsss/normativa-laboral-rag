@@ -6,6 +6,10 @@ import pytest
 from src.parser import ModifiedBy, filter_range, parse_all_articles, parse_chapter
 
 HTML_PATH = Path(__file__).resolve().parent / "fixtures" / "capitulo_iii_trabajo_dominical.html"
+# El fixture de arriba es un extracto estático que nadie vuelve a tocar: un
+# check de "frescura" contra él nunca podría fallar. Este apunta al snapshot
+# real, que sí se refresca cuando se vuelve a correr el scraper.
+FULL_SNAPSHOT_PATH = Path(__file__).resolve().parent.parent / "data" / "raw" / "decreto_2663_1950.html"
 
 
 @pytest.fixture(scope="module")
@@ -42,9 +46,14 @@ def test_article_179_has_title_and_body(articles):
         "fuente) y hay que quitar este xfail."
     ),
 )
-def test_article_179_freshness_reflects_ley_2466_de_2025(articles):
-    art = articles["179"]
-    laws = {(m.type, m.number, m.year) for m in art.modified_by}
+def test_article_179_freshness_reflects_ley_2466_de_2025():
+    full_articles = {
+        a.article_id: a
+        for a in parse_chapter(
+            FULL_SNAPSHOT_PATH, "Capítulo III - Trabajo Dominical y Festivo", ("175", "186")
+        )
+    }
+    laws = {(m.type, m.number, m.year) for m in full_articles["179"].modified_by}
     assert ("ley", "2466", 2025) in laws
 
 
