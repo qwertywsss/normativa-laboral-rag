@@ -79,6 +79,44 @@ def test_article_182_flagged_by_constitutional_court(articles):
     assert art.status == "modificado_por_sentencia"
 
 
+def test_bare_inexequible_is_not_misclassified_as_parcial(tmp_path):
+    # Bug real: "EXEQUIBLE" es subcadena de "INEXEQUIBLE", así que una nota
+    # que solo dice "declarado INEXEQUIBLE" (sin un EXEQUIBLE autónomo)
+    # quedaba mal clasificada como "exequible_parcial". Sobre el CST completo,
+    # esto afectaba las 44 revisiones parciales: 0 quedaban como "inexequible".
+    html = (
+        "<p><strong>ARTICULO 900. UNO.</strong> Texto.</p>"
+        "<p>(Declarado INEXEQUIBLE por la Corte Constitucional mediante "
+        "Sentencia C-247-01)</p>"
+    )
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("900", "900"))}
+    art = arts["900"]
+
+    assert art.constitutional_review[0].result == "inexequible"
+    assert art.status == "inexequible"
+
+
+def test_scoped_inexequible_does_not_bring_down_whole_article(tmp_path):
+    # Bug real (art. 59, 430 del CST): "Literal c) declarado INEXEQUIBLE..."
+    # tumba solo ese literal, no el artículo completo.
+    html = (
+        "<p><strong>ARTICULO 901. UNO.</strong> Texto largo que sigue vigente.</p>"
+        "<p>(Literal c) declarado INEXEQUIBLE por la Corte Constitucional "
+        "mediante Sentencia C-247-01)</p>"
+    )
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("901", "901"))}
+    art = arts["901"]
+
+    assert art.constitutional_review[0].scope == "Literal c"
+    assert art.status == "vigente"
+
+
 def test_article_with_no_modifications_stays_vigente(articles):
     art = articles["176"]
     assert art.modified_by == []

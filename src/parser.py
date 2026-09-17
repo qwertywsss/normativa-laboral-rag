@@ -39,7 +39,7 @@ CONSTITUTIONAL_REVIEW_RE = re.compile(
     # "declarado CONDICIONALMENTE EXEQUIBLE..." mete una palabra entre el verbo
     # y el resultado; sin el calificador opcional, la nota completa se pierde
     # (no matchea nada) y se cuela como texto de cuerpo del artículo.
-    r"Declarad[oa]s?\s+(?:\w+\s+){0,2}(?P<result>EXEQUIBLE|INEXEQUIBLE)[^)]*Sentencia\s*(?P<sentencia>[A-Z]-\d+-\d+)",
+    r"(?P<verb>Declarad[oa]s?)\s+(?:\w+\s+){0,2}(?P<result>EXEQUIBLE|INEXEQUIBLE)[^)]*Sentencia\s*(?P<sentencia>[A-Z]-\d+-\d+)",
     re.IGNORECASE,
 )
 
@@ -60,6 +60,7 @@ class ConstitutionalReview:
     sentencia: str
     result: str
     raw_note: str
+    scope: str = ""
 
 
 @dataclass
@@ -150,21 +151,32 @@ def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
     review_match = CONSTITUTIONAL_REVIEW_RE.search(paragraph_text)
     if review_match:
         upper_text = paragraph_text.upper()
-        is_inexequible = "INEXEQUIBLE" in upper_text
-        if is_inexequible and "EXEQUIBLE" in upper_text:
+        # "EXEQUIBLE" es subcadena de "INEXEQUIBLE": sin \b, una nota que solo
+        # dice "declarado INEXEQUIBLE" (sin un EXEQUIBLE autónomo en el mismo
+        # texto) se clasificaba como "exequible_parcial" en vez de
+        # "inexequible". En 151 revisiones del CST, ninguna quedaba como
+        # "inexequible" por este bug.
+        is_inexequible = bool(re.search(r"\bINEXEQUIBLE\b", upper_text))
+        is_exequible = bool(re.search(r"\bEXEQUIBLE\b", upper_text))
+        if is_inexequible and is_exequible:
             result = "exequible_parcial"
         elif "CONDICIONAL" in upper_text:
             result = "exequible_condicionado"
         else:
             result = review_match.group("result").lower()
+        scope = _scope_before_verb(paragraph_text, review_match)
         article.constitutional_review.append(
             ConstitutionalReview(
                 sentencia=review_match.group("sentencia").upper(),
                 result=result,
                 raw_note=_clean(paragraph_text),
+                scope=scope,
             )
         )
-        if is_inexequible:
+        # Igual que con las derogatorias (ver docs/experiments/004): una
+        # inexequibilidad acotada a un literal o numeral no tumba el artículo
+        # completo.
+        if is_inexequible and not scope:
             article.status = "modificado_por_sentencia" if "salvo" in paragraph_text.lower() else "inexequible"
         return True
 

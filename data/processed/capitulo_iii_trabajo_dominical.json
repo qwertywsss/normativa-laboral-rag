@@ -18,7 +18,8 @@
       {
         "sentencia": "C-568-93",
         "result": "exequible",
-        "raw_note": "(Declarado EXEQUIBLE por la Corte Constitucional mediante Sentencia C-568-93)"
+        "raw_note": "(Declarado EXEQUIBLE por la Corte Constitucional mediante Sentencia C-568-93)",
+        "scope": ""
       }
     ],
     "status": "vigente",
@@ -37,7 +38,8 @@
       {
         "sentencia": "C-568-93",
         "result": "exequible",
-        "raw_note": "(Declarado EXEQUIBLE por la Corte Constitucional mediante Sentencia C-568-93)"
+        "raw_note": "(Declarado EXEQUIBLE por la Corte Constitucional mediante Sentencia C-568-93)",
+        "scope": ""
       }
     ],
     "status": "vigente",
@@ -167,7 +169,8 @@
       {
         "sentencia": "C-710-96",
         "result": "exequible_parcial",
-        "raw_note": "(Declarado EXEQUIBLE, salvo el aparte tachado declarado INEXEQUIBLE por la Corte Constitucional mediante Sentencia C-710-96)"
+        "raw_note": "(Declarado EXEQUIBLE, salvo el aparte tachado declarado INEXEQUIBLE por la Corte Constitucional mediante Sentencia C-710-96)",
+        "scope": ""
       }
     ],
     "status": "modificado_por_sentencia",
