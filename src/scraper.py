@@ -1,6 +1,7 @@
 import hashlib
 import sys
 import tempfile
+from functools import lru_cache
 from pathlib import Path
 
 import certifi
@@ -18,7 +19,10 @@ USER_AGENT = "Mozilla/5.0 (compatible; normativa-laboral-rag/0.1)"
 MISSING_INTERMEDIATE = Path(__file__).resolve().parent.parent / "certs" / "sectigo_rsa_ov_intermediate.pem"
 
 
+@lru_cache(maxsize=1)
 def _ca_bundle_path() -> str:
+    # Cacheado: sin esto, cada llamada dejaba un .pem huérfano en /tmp
+    # (NamedTemporaryFile con delete=False nunca se limpiaba solo).
     combined = Path(certifi.where()).read_bytes() + b"\n" + MISSING_INTERMEDIATE.read_bytes()
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pem")
     tmp.write(combined)
