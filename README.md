@@ -1,5 +1,7 @@
 # normativa-laboral-rag
 
+![tests](https://github.com/qwertywsss/normativa-laboral-rag/actions/workflows/tests.yml/badge.svg)
+
 Sistema de preguntas y respuestas sobre el Código Sustantivo del Trabajo (CST) de Colombia, con énfasis en la evaluación del pipeline (no solo en construirlo).
 
 > **Aviso:** este proyecto entrega información normativa con su cita (artículo, ley/decreto que lo modificó, jurisprudencia relevante). No es asesoría legal ni reemplaza la consulta con un abogado. Es un proyecto educativo de ingeniería, no un producto legal.
