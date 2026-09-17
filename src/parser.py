@@ -110,11 +110,18 @@ def _register_affectation(
         article.status = "derogado"
 
 
+def _scope_before_verb(paragraph_text: str, match: re.Match) -> str:
+    # Solo cuenta un calificador de alcance si aparece ANTES del verbo, ej.
+    # "Numeral 2 modificado por...". Si aparece después ("...por el numeral 4
+    # del Art. 3 de la Ley 48 de 1968") describe la estructura de la NORMA que
+    # afecta, no del artículo afectado, y no debe tratarse como alcance.
+    prefix = paragraph_text[: match.start("verb")]
+    scope_match = SCOPE_QUALIFIER_RE.search(prefix)
+    return _clean(scope_match.group(0)).rstrip(")") if scope_match else ""
+
+
 def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
     """Returns True if the paragraph was a metadata note (not article body)."""
-    scope_match = SCOPE_QUALIFIER_RE.search(paragraph_text)
-    scope = _clean(scope_match.group(0)) if scope_match else ""
-
     mod_match = MODIFIED_BY_RE.search(paragraph_text)
     if mod_match:
         _register_affectation(
@@ -124,7 +131,7 @@ def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
             number=mod_match.group("number"),
             year=mod_match.group("year"),
             source_articles=_clean(mod_match.group("source_articles")),
-            scope=scope,
+            scope=_scope_before_verb(paragraph_text, mod_match),
         )
         return True
 
@@ -136,7 +143,7 @@ def _classify_paragraph(paragraph_text: str, article: Article) -> bool:
             type_=direct_match.group("type"),
             number=direct_match.group("number"),
             year=direct_match.group("year"),
-            scope=scope,
+            scope=_scope_before_verb(paragraph_text, direct_match),
         )
         return True
 

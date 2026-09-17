@@ -115,7 +115,7 @@ def test_literal_derogado_does_not_derogate_whole_article(tmp_path):
     art = arts["800"]
 
     assert art.status == "vigente"
-    assert art.modified_by[0].scope == "Literal d)"
+    assert art.modified_by[0].scope == "Literal d"
 
 
 def test_numeral_derogado_does_not_derogate_whole_article(tmp_path):
@@ -133,6 +133,26 @@ def test_numeral_derogado_does_not_derogate_whole_article(tmp_path):
 
     assert art.status == "vigente"
     assert art.modified_by[0].scope == "Numeral 2"
+
+
+def test_qualifier_after_verb_belongs_to_the_modifying_norm_not_scope(tmp_path):
+    # Bug real (art. 430 del CST): "numeral 4" aquí describe el Art. 3 de la
+    # Ley 48 (la norma que deroga), no un numeral del artículo afectado. El
+    # artículo 430 no tiene numerales — es de un solo párrafo — así que
+    # tratar esto como scope dejaba un artículo totalmente derogado marcado
+    # "vigente" por error.
+    html = (
+        "<p><strong>ARTICULO 804. UNO.</strong> Texto corto, un solo párrafo.</p>"
+        "<p>(Derogado por el numeral 4 del Art. 3 de la Ley 48 de 1968)</p>"
+    )
+    path = tmp_path / "mini.html"
+    path.write_text(html, encoding="utf-8")
+
+    arts = {a.article_id: a for a in parse_chapter(path, "Test", ("804", "804"))}
+    art = arts["804"]
+
+    assert art.modified_by[0].scope == ""
+    assert art.status == "derogado"
 
 
 def test_unscoped_derogado_still_derogates_whole_article(tmp_path):
