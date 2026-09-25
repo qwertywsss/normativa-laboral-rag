@@ -25,6 +25,16 @@ def load_corpus_text(as_of: date) -> str:
         texto = art.text
         if art.texto_transitorio:
             texto = f"{texto} {art.texto_transitorio}"
+        tramo = art.tramo_aplicable(as_of)
+        if tramo:
+            # Resuelto en código, no dejado al LLM: comparar una fecha contra
+            # tres rangos es aritmética determinista (ver docs/experiments/007).
+            texto += (
+                f" [Hecho ya resuelto para la fecha de hoy: el tramo mínimo garantizado "
+                f"es {tramo.valor} (vigente desde {tramo.vigente_desde.isoformat()}); el "
+                f"empleador puede pagar hasta el 100% desde ya, de forma voluntaria, "
+                f"según el propio parágrafo transitorio.]"
+            )
         lines.append(f"Artículo {art.article_id} ({art.title}) — {art.fuente}: {texto}")
     return "\n\n".join(lines)
 
@@ -38,7 +48,9 @@ def generate_gemini(prompt: str) -> str:
     from google import genai
 
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-    response = client.models.generate_content(model="gemini-flash-latest", contents=prompt)
+    # "gemini-flash-latest" resolvió a un modelo con demanda alta y 503
+    # constantes en las pruebas; se fija una versión estable disponible.
+    response = client.models.generate_content(model="gemini-3.1-flash-lite", contents=prompt)
     return response.text.strip()
 
 
