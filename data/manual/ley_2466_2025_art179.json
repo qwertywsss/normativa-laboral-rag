@@ -1,0 +1,26 @@
+{
+  "article_id": "179",
+  "code": "CST",
+  "title": "Remuneración en días de descanso obligatorio",
+  "text": "El trabajo en día de descanso obligatorio, o días de fiesta se remunera con un recargo del ciento por ciento (100%) sobre el salario ordinario en proporción a las horas laboradas, sin perjuicio del salario ordinario a que tenga derecho el trabajador por haber laborado la semana completa. Si con el día de descanso obligatorio, coincide otro día de descanso remunerado, solo tendrá derecho el trabajador, si trabaja, al recargo establecido en el numeral anterior. Parágrafo 1°. Se entiende que el trabajo en día de descanso obligatorio es ocasional cuando el trabajador o trabajadora labora hasta dos (2) días de descanso obligatorio, durante el mes calendario. Se entiende que el trabajo en día de descanso es habitual cuando el trabajador o trabajadora labore tres (3) o más de estos durante el mes calendario. Parágrafo 2°. Para todos los efectos, cuando este Código haga referencia a \"dominical\", se entenderá que trata de \"día de descanso obligatorio\". Parágrafo 3°. Las partes del contrato de trabajo podrán convenir por escrito que su día de descanso sea distinto al domingo. En caso de que las partes no lo hagan expreso en el contrato u otro sí, se presumirá como día de descanso obligatorio el domingo.",
+  "modified_by": {
+    "type": "ley",
+    "number": "2466",
+    "year": 2025,
+    "source_articles": "14"
+  },
+  "vigente_desde": "2025-07-01",
+  "parrafo_transitorio": {
+    "descripcion": "Implementación gradual del recargo del 100%, permitida por el propio artículo 14 de la Ley 2466 de 2025.",
+    "escalonamiento": [
+      {"recargo": "80%", "vigente_desde": "2025-07-01", "vigente_hasta": "2026-06-30"},
+      {"recargo": "90%", "vigente_desde": "2026-07-01", "vigente_hasta": "2027-06-30"},
+      {"recargo": "100%", "vigente_desde": "2027-07-01", "vigente_hasta": null}
+    ]
+  },
+  "source_url": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=260676",
+  "raw_snapshot_path": "data/raw/ley_2466_2025.html",
+  "raw_snapshot_sha256": "00550e27057f02c1a1d43a5d4ef719e84ef3422fcce65894cac409c0ced935d4",
+  "ingestion_date": "2026-09-25",
+  "ingestion_method": "manual"
+}
