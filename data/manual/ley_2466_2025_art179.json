@@ -11,7 +11,8 @@
   },
   "vigente_desde": "2025-07-01",
   "parrafo_transitorio": {
-    "descripcion": "Implementación gradual del recargo del 100%, permitida por el propio artículo 14 de la Ley 2466 de 2025.",
+    "texto": "Parágrafo transitorio. Implementación Gradual. El recargo del 100% de qué trata este artículo, podrá ser implementado de manera gradual por el empleador, de la siguiente manera: A partir del primero de julio de 2025, se incrementará el recargo por laborar en día de descanso obligatorio a 80%. A partir del primero de julio de 2026, se incrementará el recargo por laborar en día de descanso obligatorio a 90%. A partir del primero de julio de 2027, se dará plena aplicación al recargo por laborar día de descanso obligatorio en los términos de este artículo. Lo anterior, sin perjuicio de que, a la entrada en vigencia de la presente Ley, el empleador se acoja al recargo del 100%.",
+    "descripcion": "Implementación gradual del recargo del 100%, permitida por el propio artículo 14 de la Ley 2466 de 2025. El 100% sigue siendo el recargo legal desde el inicio: el escalonamiento fija un MÍNIMO garantizado por tramo, no un tope — el empleador puede pagar el 100% desde ya, de forma voluntaria.",
     "escalonamiento": [
       {"recargo": "80%", "vigente_desde": "2025-07-01", "vigente_hasta": "2026-06-30"},
       {"recargo": "90%", "vigente_desde": "2026-07-01", "vigente_hasta": "2027-06-30"},
