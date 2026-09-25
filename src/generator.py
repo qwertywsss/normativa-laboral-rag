@@ -22,7 +22,10 @@ def load_corpus_text(as_of: date) -> str:
     lines = []
     for article_id in _pilot_article_ids():
         art = get_article(article_id, as_of)
-        lines.append(f"Artículo {art.article_id} ({art.title}) — {art.fuente}: {art.text}")
+        texto = art.text
+        if art.texto_transitorio:
+            texto = f"{texto} {art.texto_transitorio}"
+        lines.append(f"Artículo {art.article_id} ({art.title}) — {art.fuente}: {texto}")
     return "\n\n".join(lines)
 
 
