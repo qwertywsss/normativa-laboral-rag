@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -13,6 +13,13 @@ EARLIEST_DATE = date(1950, 1, 1)
 
 
 @dataclass
+class Tramo:
+    valor: str
+    vigente_desde: date
+    vigente_hasta: date | None
+
+
+@dataclass
 class ArticleVersion:
     article_id: str
     title: str
@@ -20,10 +27,33 @@ class ArticleVersion:
     fuente: str
     vigente_desde: date
     vigente_hasta: date | None
+    texto_transitorio: str = ""
+    tramos: list[Tramo] = field(default_factory=list)
+
+    def tramo_aplicable(self, as_of: date) -> Tramo | None:
+        for tramo in self.tramos:
+            if tramo.vigente_desde <= as_of and (tramo.vigente_hasta is None or as_of <= tramo.vigente_hasta):
+                return tramo
+        return None
 
 
 def _parse_date(value: str | None) -> date | None:
     return date.fromisoformat(value) if value else None
+
+
+def _load_transitorio(data: dict) -> tuple[str, list[Tramo]]:
+    transitorio = data.get("parrafo_transitorio")
+    if not transitorio:
+        return "", []
+    tramos = [
+        Tramo(
+            valor=t["recargo"],
+            vigente_desde=_parse_date(t["vigente_desde"]),
+            vigente_hasta=_parse_date(t.get("vigente_hasta")),
+        )
+        for t in transitorio.get("escalonamiento", [])
+    ]
+    return transitorio.get("texto", ""), tramos
 
 
 def _load_manual_versions(article_id: str) -> list[ArticleVersion]:
@@ -34,6 +64,7 @@ def _load_manual_versions(article_id: str) -> list[ArticleVersion]:
             continue
         mod = data["modified_by"]
         fuente = f"{mod['type'].replace('_', ' ').title()} {mod['number']} de {mod['year']}"
+        texto_transitorio, tramos = _load_transitorio(data)
         versions.append(
             ArticleVersion(
                 article_id=article_id,
@@ -42,6 +73,8 @@ def _load_manual_versions(article_id: str) -> list[ArticleVersion]:
                 fuente=fuente,
                 vigente_desde=_parse_date(data["vigente_desde"]),
                 vigente_hasta=_parse_date(data.get("vigente_hasta")),
+                texto_transitorio=texto_transitorio,
+                tramos=tramos,
             )
         )
     return versions

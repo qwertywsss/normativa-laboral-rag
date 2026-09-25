@@ -33,6 +33,29 @@ def test_get_article_exactly_on_transition_date():
     assert art_day_before.fuente.startswith("Decreto 2663")
 
 
+def test_transitorio_text_and_tramos_are_loaded():
+    # Bug real: el texto del transitorio se había extraído del HTML pero nunca
+    # se guardó en el JSON manual, así que el prompt del generador nunca lo
+    # veía. El modelo respondía 100% (correcto según lo que se le mostraba,
+    # pero no el mínimo vigente hoy) sin ninguna señal de que existía un
+    # escalonamiento. Ver docs/experiments/007.
+    art = get_article("179", date(2026, 9, 25))
+    assert "Implementación Gradual" in art.texto_transitorio
+    assert len(art.tramos) == 3
+
+
+def test_tramo_aplicable_boundaries():
+    art = get_article("179", date(2026, 9, 25))
+    assert art.tramo_aplicable(date(2026, 6, 30)).valor == "80%"
+    assert art.tramo_aplicable(date(2026, 7, 1)).valor == "90%"
+    assert art.tramo_aplicable(date(2027, 7, 1)).valor == "100%"
+
+
+def test_tramo_aplicable_returns_none_outside_any_range():
+    art = get_article("179", date(2026, 9, 25))
+    assert art.tramo_aplicable(date(2020, 1, 1)) is None
+
+
 def test_article_without_manual_version_has_a_single_open_ended_version():
     versions = load_versions("176")
     assert len(versions) == 1
